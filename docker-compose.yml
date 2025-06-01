@@ -1,0 +1,135 @@
+services:
+  apigateway:
+    image: ${DOCKER_REGISTRY-}apigateway
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "8000:80"
+    depends_on:
+      - clientservice
+      - taskservice
+    networks:
+      - gestor-tareas-network
+
+  clientservice:
+    image: ${DOCKER_REGISTRY-}clientservice
+    build:
+      context: .
+      dockerfile: ClientService/Dockerfile
+    ports:
+      - "8001:80"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=db-usuarios;Database=ClientDB;User=sa;Password=Your_password123;TrustServerCertificate=True;
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Username=admin
+      - RabbitMQ__Password=admin123
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      db-usuarios:
+        condition: service_healthy
+    networks:
+      - gestor-tareas-network
+
+  taskservice:
+    image: ${DOCKER_REGISTRY-}taskservice
+    build:
+      context: .
+      dockerfile: TaskService/Dockerfile      
+    ports:
+      - "8002:80"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=db-tareas;Database=TaskDB;User=sa;Password=Your_password123;TrustServerCertificate=True;
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Username=admin
+      - RabbitMQ__Password=admin123
+      - Ftp__Host=ftp-server
+      - Ftp__Username=ftpuser
+      - Ftp__Password=ftppass
+      - Ftp__Timeout=30
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      db-tareas:
+        condition: service_healthy
+      
+    networks:
+      - gestor-tareas-network
+
+  db-usuarios:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "Your_password123"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1435:1433"
+    volumes:
+      - db-usuarios-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Your_password123 -Q \"SELECT 1\" -C -N || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - gestor-tareas-network
+
+  db-tareas:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "Your_password123"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1434:1433"
+    volumes:
+      - db-tareas-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Your_password123 -Q \"SELECT 1\" -C -N || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - gestor-tareas-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - gestor-tareas-network
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ftp-server:
+    image: stilliard/pure-ftpd
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009"
+    environment:
+      FTP_USER_NAME: ftpuser
+      FTP_USER_PASS: ftppass
+      FTP_USER_HOME: /home/ftpuser
+    volumes:
+      - ftp-data:/home/ftpuser
+    networks:
+      - gestor-tareas-network
+
+networks:
+  gestor-tareas-network:
+    driver: bridge
+
+volumes:
+  db-usuarios-data:
+  db-tareas-data:
+  ftp-data:

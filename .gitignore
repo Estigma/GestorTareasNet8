@@ -1,0 +1,179 @@
+# .gitignore for .NET 8, Docker, RabbitMQ, SQL Server projects
+
+# Visual Studio files
+.vs/
+*.suo
+*.user
+*.userprefs
+*.dbmdl
+*.jfm
+
+# Build artifacts
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+build/
+dist/
+packages/
+*.pdb
+*.dll
+*.exe
+*.log
+*.tmp
+*.vsix
+*.vsixmanifest
+*.cache
+*.exp
+*.lib
+*.ncb
+*.res
+*.sbr
+*.tlb
+*.tlh
+*.bak
+*.orig
+# Exclude Visual Studio's Intellisense files
+*.aps
+*.bsc
+*.ncb
+*.sbr
+*.tlb
+*.tlh
+*.pch
+*.ipch
+
+# Rider files
+.idea/
+*.sln.DotSettings
+*.user
+*.userprefs
+
+# NuGet packages
+*.nupkg
+*.snupkg
+*.lock.json
+# NuGet cache and build output
+.nuget/
+NuGetScratch/
+project.assets.json
+# Rider-specific NuGet files
+*.nuget.cache
+
+# Resharper files
+*.ReSharper/
+*.DotSettings.user
+
+# EditorConfig
+.editorconfig
+
+# Git related
+.gitattributes
+.gitkeep # Generally not needed unless you explicitly want to keep empty folders
+
+# Docker files
+# Ignore Docker volumes and build contexts for local development
+docker-compose.override.yml # Usually contains local overrides
+docker-compose.*.yml # Ignore other compose overrides, if any, that are local specific
+*.dockerignore
+# Docker build context directories if they are created locally and not intended for repo
+# For example, if you copy content to a build directory before building
+# /build_context/
+
+# Database files (SQL Server specific)
+*.mdf
+*.ldf
+*.bak
+*.sdf
+*.sqldb
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+*.runsettings
+
+# Package Manager files (npm, yarn if you use frontend in any project)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+
+# Environment variables
+.env # If you use .env files for local environment variables
+
+# Configuration files
+appsettings.Development.json # Or other environment-specific appsettings that are local
+appsettings.Production.json
+appsettings.Staging.json
+appsettings.json.user
+ocelot.Development.json
+ocelot.json.user
+
+# Any other miscellaneous generated files
+Thumb.db
+ehthumbs.db
+Desktop.ini
+
+# VS Code files
+.vscode/
+
+# Logs
+logs/
+*.log
+
+# Temp files
+*.temp
+*~
+~*
+
+# Publish profiles
+*.pubxml
+*.publishproj
+
+# User secrets
+# Typically managed by .NET's Secret Manager, which stores secrets outside the project folder.
+# However, if you explicitly add them to the project for some reason, ignore them.
+*.secrets.json
+
+# If you run tests with an in-memory database or local database files:
+*.db
+
+# Additional for .NET Core / .NET 8
+# `publish` folder created by `dotnet publish`
+publish/
+
+# Local tools directory
+.config/dotnet-tools.json # Don't ignore this if it contains project-specific tools
+.config/dotnet-tools.checksum # This can be ignored as it's generated
+
+# Content files that are copied to output, but might be generated or downloaded during build
+# (e.g., if you have specific build tasks that download assets)
+# This is highly project-specific, add if you encounter issues.
+# /wwwroot/lib/ # example for client-side libraries that are restored by NPM/Yarn/LibMan
+
+# If you have custom scripts or executables that are not part of the source
+*.sh.exe
+*.cmd
+*.ps1
+*.psm1
+
+# Certificate files
+*.pfx
+*.pem
+*.cer
+
+# Local Debugging settings
+launchSettings.json # KEEP THIS if it contains shared debug profiles, but if it has local machine specific paths, ignore it.
+# Given your docker-compose.override.yml is ignored, it implies local dev setup might be separate.
+# If launchSettings.json contains user-specific paths or secrets (which it shouldn't for secrets, but sometimes happens),
+# you might want to ignore it, but generally it's part of the project config.
+
+# Project specific: If your project structure generates any files outside standard locations
+# e.g., output of code generation, static analysis reports etc.
+# /generated_code/
+# /analysis_reports/

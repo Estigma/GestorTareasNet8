@@ -1,0 +1,43 @@
+{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/usuarios/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "clientservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/usuarios/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/tareas/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "taskservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/tareas/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/tareas/{id}/asignar",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "taskservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/tareas/{id}/asignar",
+      "UpstreamHttpMethod": [ "POST" ]
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://api-gateway:80"
+  }
+}
