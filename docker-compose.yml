@@ -1,3 +1,4 @@
+---
 services:
   apigateway:
     image: ${DOCKER_REGISTRY-}apigateway
@@ -6,26 +7,29 @@ services:
       dockerfile: ApiGateway/Dockerfile
     environment:
       - ASPNETCORE_URLS=http://+:80
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - SEQ_URL=http://seq:5341
     ports:
-      - "8000:80"
+      - 8000:80
     depends_on:
       - clientservice
       - taskservice
     networks:
       - gestor-tareas-network
-
   clientservice:
     image: ${DOCKER_REGISTRY-}clientservice
     build:
       context: .
       dockerfile: ClientService/Dockerfile
     ports:
-      - "8001:80"
+      - 8001:80
     environment:
       - ConnectionStrings__DefaultConnection=Server=db-usuarios;Database=ClientDB;User=sa;Password=Your_password123;TrustServerCertificate=True;
       - RabbitMQ__HostName=rabbitmq
       - RabbitMQ__Username=admin
       - RabbitMQ__Password=admin123
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - SEQ_URL=http://seq:5341
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -33,14 +37,13 @@ services:
         condition: service_healthy
     networks:
       - gestor-tareas-network
-
   taskservice:
     image: ${DOCKER_REGISTRY-}taskservice
     build:
       context: .
-      dockerfile: TaskService/Dockerfile      
+      dockerfile: TaskService/Dockerfile
     ports:
-      - "8002:80"
+      - 8002:80
     environment:
       - ConnectionStrings__DefaultConnection=Server=db-tareas;Database=TaskDB;User=sa;Password=Your_password123;TrustServerCertificate=True;
       - RabbitMQ__HostName=rabbitmq
@@ -50,72 +53,78 @@ services:
       - Ftp__Username=ftpuser
       - Ftp__Password=ftppass
       - Ftp__Timeout=30
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - SEQ_URL=http://seq:5341
     depends_on:
       rabbitmq:
         condition: service_healthy
       db-tareas:
         condition: service_healthy
-      
     networks:
       - gestor-tareas-network
-
   db-usuarios:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
-      SA_PASSWORD: "Your_password123"
-      ACCEPT_EULA: "Y"
-      MSSQL_PID: "Developer"
+      SA_PASSWORD: Your_password123
+      ACCEPT_EULA: Y
+      MSSQL_PID: Developer
     ports:
-      - "1435:1433"
+      - 1435:1433
     volumes:
       - db-usuarios-data:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Your_password123 -Q \"SELECT 1\" -C -N || exit 1"]
+      test:
+        - CMD-SHELL
+        - /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Your_password123
+          -Q "SELECT 1" -C -N || exit 1
       interval: 10s
       timeout: 5s
       retries: 10
     networks:
       - gestor-tareas-network
-
   db-tareas:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
-      SA_PASSWORD: "Your_password123"
-      ACCEPT_EULA: "Y"
-      MSSQL_PID: "Developer"
+      SA_PASSWORD: Your_password123
+      ACCEPT_EULA: Y
+      MSSQL_PID: Developer
     ports:
-      - "1434:1433"
+      - 1434:1433
     volumes:
       - db-tareas-data:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Your_password123 -Q \"SELECT 1\" -C -N || exit 1"]
+      test:
+        - CMD-SHELL
+        - /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Your_password123
+          -Q "SELECT 1" -C -N || exit 1
       interval: 10s
       timeout: 5s
       retries: 10
     networks:
       - gestor-tareas-network
-
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - 5672:5672
+      - 15672:15672
     networks:
       - gestor-tareas-network
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin123
     healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
+      test:
+        - CMD
+        - rabbitmqctl
+        - status
       interval: 10s
       timeout: 5s
       retries: 5
-
   ftp-server:
     image: stilliard/pure-ftpd
     ports:
-      - "21:21"
-      - "30000-30009:30000-30009"
+      - 21:21
+      - 30000-30009:30000-30009
     environment:
       FTP_USER_NAME: ftpuser
       FTP_USER_PASS: ftppass
@@ -124,12 +133,48 @@ services:
       - ftp-data:/home/ftpuser
     networks:
       - gestor-tareas-network
-
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - 16686:16686
+      - 4317:4317
+      - 4318:4318
+    networks:
+      - gestor-tareas-network
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:16686
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  seq:
+    image: datalust/seq:latest
+    ports:
+      - 5341:5341
+      - 8082:80
+    networks:
+      - gestor-tareas-network
+    environment:
+      - ACCEPT_EULA=Y
+    volumes:
+      - seq-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:80
+      interval: 10s
+      timeout: 5s
+      retries: 5
 networks:
   gestor-tareas-network:
     driver: bridge
-
 volumes:
-  db-usuarios-data:
-  db-tareas-data:
-  ftp-data:
+  db-usuarios-data: null
+  db-tareas-data: null
+  ftp-data: null
+  seq-data: null
