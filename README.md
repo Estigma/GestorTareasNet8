@@ -63,38 +63,38 @@ Los siguientes diagramas ilustran la arquitectura de la solución:
 * **Testcontainers**: Para facilitar las pruebas de integración con dependencias como RabbitMQ.
 * **FluentAssertions**: Para aserciones más legibles en las pruebas.
 
-## Estructura del Proyecto
+### Estructura del Proyecto 
 
-/GestorTareasNet8
-|-- ApiGateway/                   # Proyecto del API Gateway (Ocelot)
-|-- ClientService/                # Microservicio de Usuarios
-|   |-- Controllers/
-|   |-- Data/
-|   |-- DTOs/
-|   |-- Models/
-|   |-- Services/                 # Consumidor RabbitMQ para validación
-|   |-- Dockerfile
-|   |-- init-db.sh
-|   |-- init.sql
-|-- TaskService/                  # Microservicio de Tareas
-|   |-- Controllers/
-|   |-- Data/
-|   |-- DTOs/
-|   |-- Interfaces/
-|   |-- Models/
-|   |-- Services/                 # Productor RabbitMQ, Validador de Usuario (RPC), Servicio FTP
-|   |-- Dockerfile
-|   |-- init-db.sh
-|   |-- init.sql
-|-- TaskService.Test/             # Pruebas para TaskService
-|-- DIAGRAMAS/                    # Contiene los diagramas de arquitectura
-|   |-- 1. Diagrama C4.png
-|   |-- 2. Diagrama de arquitectura.png
-|   |-- 3. Diagrama de componentes TaskService.png
-|   |-- 4. Diagrama de secuencia.png
-|-- docker-compose.yml            # Orquestación de todos los servicios para producción/despliegue
-|-- GestorTareas.sln              # Archivo de solución de Visual Studio
-|-- README.md                     # Este archivo
+* ***/GestorTareasNet8***
+* **|-- ApiGateway/**                   # Proyecto del API Gateway (Ocelot)
+* **|-- ClientService/**                # Microservicio de Usuarios
+* |   |-- Controllers/
+* |   |-- Data/
+* |   |-- DTOs/
+* |   |-- Models/
+* |   |-- Services/                 # Consumidor RabbitMQ para validación
+* |   |-- Dockerfile
+* |   |-- init-db.sh
+* |   |-- init.sql
+* |**-- TaskService/**                  # Microservicio de Tareas
+* |   |-- Controllers/
+* |   |-- Data/
+* |   |-- DTOs/
+* |   |-- Interfaces/
+* |   |-- Models/
+* |   |-- Services/                 # Productor RabbitMQ, Validador de Usuario (RPC), Servicio FTP
+* |   |-- Dockerfile
+* |   |-- init-db.sh
+* |   |-- init.sql
+* **|-- TaskService.Test/**             # Pruebas para TaskService
+* **|-- DIAGRAMAS/**                    # Contiene los diagramas de arquitectura
+* |   |-- 1. Diagrama C4.png
+* |   |-- 2. Diagrama de arquitectura.png
+* |   |-- 3. Diagrama de componentes TaskService.png
+* |   |-- 4. Diagrama de secuencia.png
+* |**-- docker-compose.yml**            # Orquestación de todos los servicios para producción/despliegue
+* |**-- GestorTareas.sln**              # Archivo de solución de Visual Studio
+
 
 
 ## Prerrequisitos
