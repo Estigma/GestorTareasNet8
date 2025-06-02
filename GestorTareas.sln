@@ -13,6 +13,15 @@ Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskService.Test", "TaskService.Test\TaskService.Test.csproj", "{F1594004-1851-4660-BF89-E9D6E43D8AA6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		Diagramas\1. Diagrama C4.png = Diagramas\1. Diagrama C4.png
+		Diagramas\2. Diagrama de arquitectura.png = Diagramas\2. Diagrama de arquitectura.png
+		Diagramas\3. Diagrama de componentes TaskService.png = Diagramas\3. Diagrama de componentes TaskService.png
+		Diagramas\4. Diagrama de secuencia.png = Diagramas\4. Diagrama de secuencia.png
+		Diagramas\C4.dsl = Diagramas\C4.dsl
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

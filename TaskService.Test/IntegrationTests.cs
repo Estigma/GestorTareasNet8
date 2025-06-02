@@ -19,7 +19,7 @@ using IModel = RabbitMQ.Client.IModel;
 
 namespace TaskService.Test
 {
-    public class TareasConRabbitTests : IAsyncLifetime
+    public class IntegrationTests : IAsyncLifetime
     {
         private readonly RabbitMqContainer _rabbitContainer;
         private IConnection _connection;
@@ -28,7 +28,7 @@ namespace TaskService.Test
 
         private readonly WebApplicationFactory<Program> _factory;
 
-        public TareasConRabbitTests()
+        public IntegrationTests()
         {
             _rabbitContainer = new RabbitMqBuilder()
                 .WithImage("rabbitmq:3-management")                
