@@ -102,9 +102,6 @@ namespace TaskService.Controllers
 
             patchDoc.ApplyTo(tarea, ModelState); 
 
-            if (!TryValidateModel(tarea))
-                return ValidationProblem(ModelState);
-
             if ((tarea.EstadoTarea == EstadoTarea.Done || tarea.EstadoTarea == EstadoTarea.Doing || tarea.EstadoTarea == EstadoTarea.InReview) && tarea.UsuarioId == 0)
             {
                 return BadRequest(new { error = $"Estado tarea: {tarea.EstadoTarea}. Solo se puede aplicar a tareas asignadas a un usuario"  });

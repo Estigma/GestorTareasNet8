@@ -1,0 +1,14 @@
+[
+  {
+    "CodigoTarea": "TASK-001",
+    "Titulo": "Implementar FTP",
+    "Descripcion": "Implementar servicio de descarga FTP",
+    "CriteriosAceptacion": "Debe descargar archivos >1MB"
+  },
+  {
+    "CodigoTarea": "TASK-002",
+    "Titulo": "Validar formatos",
+    "Descripcion": "Implementar validación de archivos",
+    "CriteriosAceptacion": "Validar todos los campos requeridos"
+  }
+]
