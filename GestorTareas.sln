@@ -20,6 +20,34 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Diagramas\3. Diagrama de componentes TaskService.png = Diagramas\3. Diagrama de componentes TaskService.png
 		Diagramas\4. Diagrama de secuencia.png = Diagramas\4. Diagrama de secuencia.png
 		Diagramas\C4.dsl = Diagramas\C4.dsl
+		k8s-manifest\configmap-clientservice.yaml = k8s-manifest\configmap-clientservice.yaml
+		k8s-manifest\deployment-clientservice.yaml = k8s-manifest\deployment-clientservice.yaml
+		k8s-manifest\deployment-db-tareas.yaml = k8s-manifest\deployment-db-tareas.yaml
+		k8s-manifest\deployment-db-usuarios.yaml = k8s-manifest\deployment-db-usuarios.yaml
+		k8s-manifest\deployment-ftp-server.yaml = k8s-manifest\deployment-ftp-server.yaml
+		k8s-manifest\deployment-jaeger.yaml = k8s-manifest\deployment-jaeger.yaml
+		k8s-manifest\deployment-rabbitmq.yaml = k8s-manifest\deployment-rabbitmq.yaml
+		k8s-manifest\deployment-seq.yaml = k8s-manifest\deployment-seq.yaml
+		k8s-manifest\deployment-taskservice.yaml = k8s-manifest\deployment-taskservice.yaml
+		k8s-manifest\hpa-clientservice.yaml = k8s-manifest\hpa-clientservice.yaml
+		k8s-manifest\hpa-taskservice.yaml = k8s-manifest\hpa-taskservice.yaml
+		k8s-manifest\ingress-no-ocelot.yaml = k8s-manifest\ingress-no-ocelot.yaml
+		k8s-manifest\namespace.yaml = k8s-manifest\namespace.yaml
+		k8s-manifest\pvc-db-tareas.yaml = k8s-manifest\pvc-db-tareas.yaml
+		k8s-manifest\pvc-db-usuarios.yaml = k8s-manifest\pvc-db-usuarios.yaml
+		k8s-manifest\pvc-ftp.yaml = k8s-manifest\pvc-ftp.yaml
+		k8s-manifest\pvc-rabbitmq.yaml = k8s-manifest\pvc-rabbitmq.yaml
+		k8s-manifest\pvc-seq.yaml = k8s-manifest\pvc-seq.yaml
+		README - Debug.md = README - Debug.md
+		README.md = README.md
+		k8s-manifest\service-clientservice.yaml = k8s-manifest\service-clientservice.yaml
+		k8s-manifest\service-db-tareas.yaml = k8s-manifest\service-db-tareas.yaml
+		k8s-manifest\service-db-usuarios.yaml = k8s-manifest\service-db-usuarios.yaml
+		k8s-manifest\service-ftp-server.yaml = k8s-manifest\service-ftp-server.yaml
+		k8s-manifest\service-jaeger.yaml = k8s-manifest\service-jaeger.yaml
+		k8s-manifest\service-rabbitmq.yaml = k8s-manifest\service-rabbitmq.yaml
+		k8s-manifest\service-seq.yaml = k8s-manifest\service-seq.yaml
+		k8s-manifest\service-taskservice.yaml = k8s-manifest\service-taskservice.yaml
 	EndProjectSection
 EndProject
 Global

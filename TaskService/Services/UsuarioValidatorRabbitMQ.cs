@@ -21,7 +21,7 @@ namespace TaskService.Services
 
             _replyQueueName = _channel.QueueDeclare().QueueName;
 
-            var consumer = new AsyncEventingBasicConsumer(_channel); // ✅ async consumer
+            var consumer = new AsyncEventingBasicConsumer(_channel);
 
             consumer.Received += async (model, ea) =>
             {
@@ -37,7 +37,7 @@ namespace TaskService.Services
                     Console.WriteLine($"Error en consumer: {ex.Message}");
                 }
 
-                await Task.CompletedTask; // ✅ necesario para cumplir la firma async
+                await Task.CompletedTask;
             };
 
             _channel.BasicConsume(_replyQueueName, true, consumer);

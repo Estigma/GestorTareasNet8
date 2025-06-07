@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-usuarios-service
+  namespace: gestor-tareas
+spec:
+  selector:
+    app: db-usuarios
+  ports:
+  - protocol: TCP
+    port: 1433
+    targetPort: 1433

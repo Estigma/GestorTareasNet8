@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftp-server-deployment
+  namespace: gestor-tareas
+  labels:
+    app: ftp-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ftp-server
+  template:
+    metadata:
+      labels:
+        app: ftp-server
+    spec:
+      containers:
+      - name: ftp-server
+        image: stilliard/pure-ftpd
+        ports:
+        - containerPort: 21
+        env:
+        - name: FTP_USER_NAME
+          value: "ftpuser"
+        - name: FTP_USER_PASS
+          value: "ftppass"
+        - name: FTP_USER_HOME
+          value: "/home/ftpuser"
+        - name: "PUBLICHOST"
+          value: "localhost"
+        volumeMounts:
+        - name: ftp-storage
+          mountPath: /home/ftpuser
+      volumes:
+      - name: ftp-storage
+        persistentVolumeClaim:
+          claimName: ftp-data-pvc

@@ -25,83 +25,99 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Seq(seqUrl)
     .CreateLogger();
 
-builder.Host.UseSerilog();
+Log.Information("Serilog configurado para enviar logs a: {SeqUrl}", seqUrl);
 
-if (builder.Configuration["ASPNETCORE_ENVIRONMENT"] != "Test")
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddScoped<ITareaRepository, TareaRepository>();
-builder.Services.AddSingleton<IMessageProducer, RabbitMQProducer>();
-builder.Services.AddScoped<IFtpService, FtpService>();
-builder.Services.AddSingleton<IConnectionFactory>(sp =>
+try
 {
-    return new ConnectionFactory()
-    {
-        HostName = builder.Configuration["RabbitMQ:HostName"],
-        Port = AmqpTcpEndpoint.UseDefaultPort,
-        UserName = builder.Configuration["RabbitMQ:Username"],
-        Password = builder.Configuration["RabbitMQ:Password"],
-        DispatchConsumersAsync = true,
-        AutomaticRecoveryEnabled = true,
-        NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
-    };
-});
 
-builder.Services.AddScoped<IUsuarioValidator, UsuarioValidatorRabbitMQ>();
-builder.Services.AddControllers()
-    .AddNewtonsoftJson(options =>
+    builder.Host.UseSerilog();
+
+    if (builder.Configuration["ASPNETCORE_ENVIRONMENT"] != "Test")
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+    builder.Services.AddScoped<ITareaRepository, TareaRepository>();
+    builder.Services.AddSingleton<IMessageProducer, RabbitMQProducer>();
+    builder.Services.AddScoped<IFtpService, FtpService>();
+    builder.Services.AddSingleton<IConnectionFactory>(sp =>
     {
-        options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+        return new ConnectionFactory()
+        {
+            HostName = builder.Configuration["RabbitMQ:HostName"],
+            Port = AmqpTcpEndpoint.UseDefaultPort,
+            UserName = builder.Configuration["RabbitMQ:Username"],
+            Password = builder.Configuration["RabbitMQ:Password"],
+            DispatchConsumersAsync = true,
+            AutomaticRecoveryEnabled = true,
+            NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
+        };
     });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+    builder.Services.AddScoped<IUsuarioValidator, UsuarioValidatorRabbitMQ>();
+    builder.Services.AddControllers()
+        .AddNewtonsoftJson(options =>
+        {
+            options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+        });
 
-var jaegerEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://localhost:4317";
-var serviceName = builder.Environment.ApplicationName;
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
 
-builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource
-        .AddService(serviceName: builder.Environment.ApplicationName,
-                    serviceVersion: "1.0.0"))
-    .WithTracing(tracing =>
+    var jaegerEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://localhost:4317";
+    var serviceName = builder.Environment.ApplicationName;
+
+    builder.Services.AddOpenTelemetry()
+        .ConfigureResource(resource => resource
+            .AddService(serviceName: builder.Environment.ApplicationName,
+                        serviceVersion: "1.0.0"))
+        .WithTracing(tracing =>
+        {
+            tracing.AddAspNetCoreInstrumentation()
+                   .AddEntityFrameworkCoreInstrumentation()
+                   .AddHttpClientInstrumentation()
+                   .AddSource("TaskService.RabbitMQProducer")
+                   .AddSource("TaskService.UsuarioValidator")
+                   .AddOtlpExporter();
+        })
+        .WithMetrics(metrics =>
+        {
+            metrics.AddAspNetCoreInstrumentation()
+                   .AddHttpClientInstrumentation()
+                   .AddProcessInstrumentation()
+                   .AddRuntimeInstrumentation()
+                   .AddOtlpExporter(otlpOptions =>
+                   {
+                       otlpOptions.Endpoint = new Uri(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
+                   });
+        });
+
+    var app = builder.Build();
+
+    app.UseSerilogRequestLogging();
+
+    if (app.Environment.IsDevelopment() && !app.Environment.ApplicationName.Contains("Test"))
     {
-        tracing.AddAspNetCoreInstrumentation()
-               .AddEntityFrameworkCoreInstrumentation()
-               .AddHttpClientInstrumentation()
-               .AddSource("TaskService.RabbitMQProducer")
-               .AddSource("TaskService.UsuarioValidator")
-               .AddOtlpExporter();
-    })
-    .WithMetrics(metrics =>
-    {
-        metrics.AddAspNetCoreInstrumentation()
-               .AddHttpClientInstrumentation()
-               .AddProcessInstrumentation()
-               .AddRuntimeInstrumentation()
-               .AddOtlpExporter();
-    });
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.EnsureCreated();
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
 
-var app = builder.Build();
+    //app.UseHttpsRedirection();
 
-app.UseSerilogRequestLogging();
+    app.UseAuthorization();
 
-if (app.Environment.IsDevelopment() && !app.Environment.ApplicationName.Contains("Test"))
-{    
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapControllers();
+
+    app.Run();
 }
-
-//app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
-
+catch (Exception ex)
+{
+    Log.Fatal(ex, "El host de ClientService terminó inesperadamente.");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 public partial class Program { }

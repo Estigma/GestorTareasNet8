@@ -1,5 +1,4 @@
-﻿// task-service/Data/AppDbContext.cs
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TaskService.Models;
 
 namespace TaskService.Data

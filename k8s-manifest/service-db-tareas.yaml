@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-tareas-service
+  namespace: gestor-tareas
+spec:
+  selector:
+    app: db-tareas
+  ports:
+  - protocol: TCP
+    port: 1433
+    targetPort: 1433

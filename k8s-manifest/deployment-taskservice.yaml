@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taskservice-deployment
+  namespace: gestor-tareas
+  labels:
+    app: taskservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: taskservice
+  template:
+    metadata:
+      labels:
+        app: taskservice
+    spec:
+      containers:
+      - name: taskservice
+        image: estigma/taskservice:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: ConnectionStrings__DefaultConnection
+          value: "Server=db-tareas-service;Database=TaskDB;User=sa;Password=Salesiana.2025;TrustServerCertificate=True;"
+        - name: RabbitMQ__HostName
+          value: "rabbitmq-service"
+        - name: RabbitMQ__Username
+          value: "admin"
+        - name: RabbitMQ__Password
+          value: "admin123"
+        - name: Ftp__Host
+          value: "ftp-server-service"
+        - name: Ftp__Username
+          value: "ftpuser"
+        - name: Ftp__Password
+          value: "ftppass"
+        - name: Ftp__Timeout
+          value: "30"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://jaeger-service:4317"
+        - name: SEQ_URL
+          value: "http://seq-service:5341"
+        resources:
+          requests:
+            cpu: "25m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "512Mi"

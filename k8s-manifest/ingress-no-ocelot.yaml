@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gestor-tareas-ingress
+  namespace: gestor-tareas
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /api/usuarios
+        pathType: Prefix
+        backend:
+          service:
+            name: clientservice-service
+            port:
+              number: 80
+      - path: /api/tareas
+        pathType: Prefix
+        backend:
+          service:
+            name: taskservice-service
+            port:
+              number: 80

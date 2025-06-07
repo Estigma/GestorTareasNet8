@@ -21,15 +21,47 @@
 					"name": "Read",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "http://localhost/api/tareas",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"api",
+								"tareas"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Update",
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": 1,\r\n    \"codigoTarea\": \"TASK-001\",\r\n    \"titulo\": \"Implementar TaskService\",\r\n    \"descripcion\": \"Implementar Servicio TaskService\",\r\n    \"criteriosAceptacion\": \"El servicio debe estar Tokenizado\",\r\n    \"estadoTarea\": \"Doing1\",\r\n    \"estado\": true,\r\n    \"usuarioId\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/api/tareas/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"api",
+								"tareas",
+								"1"
+							]
+						}
 					},
 					"response": []
 				},
@@ -48,16 +80,15 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/tareas/3/asignar",
+							"raw": "http://localhost/api/tareas/1/asignar",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"tareas",
-								"3",
+								"1",
 								"asignar"
 							]
 						}
@@ -77,13 +108,21 @@
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"UsuarioId\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "http://localhost:8000/api/tareas/1/asignar",
+							"raw": "http://localhost/api/tareas/1/asignar",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"tareas",
@@ -101,7 +140,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\r\n  \r\n  { \"op\": \"replace\", \"path\": \"/EstadoTarea\", \"value\": \"Doing\" }\r\n]",
+							"raw": "[\r\n  \r\n  { \"op\": \"replace\", \"path\": \"/EstadoTarea\", \"value\": \"Done\" },\r\n  { \"op\": \"replace\", \"path\": \"/TiempoDesarrollo\", \"value\": \"2\" }\r\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -109,12 +148,11 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/tareas/1",
+							"raw": "http://localhost/api/tareas/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"tareas",
@@ -134,7 +172,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"nombreArchivo\": \"tareas.json\"\r\n}",
+							"raw": "{\r\n  \"nombreArchivo\": \"Archivo_FTP_Tareas.json\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -142,12 +180,11 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/api/tareas/importar",
+							"raw": "http://localhost/api/tareas/importar",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8000",
 							"path": [
 								"api",
 								"tareas",
@@ -161,7 +198,20 @@
 					"name": "TareasPorUsuario",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "http://localhost/api/Tareas/usuario/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"api",
+								"Tareas",
+								"usuario",
+								"2"
+							]
+						}
 					},
 					"response": []
 				}
@@ -173,8 +223,28 @@
 				{
 					"name": "Create",
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id\": 0,\r\n  \"identificacion\": \"1717773616\",\r\n  \"nombres\": \"Iván Mauricio\",\r\n  \"apellidos\": \"Romero Mejía\",\r\n  \"edad\": 37,\r\n  \"cargo\": \"Analista\",\r\n  \"estado\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/api/usuarios",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"api",
+								"usuarios"
+							]
+						}
 					},
 					"response": []
 				},
@@ -182,23 +252,67 @@
 					"name": "Read",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "http://localhost/api/usuarios",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"api",
+								"usuarios"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Update",
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id\": 1,\r\n  \"identificacion\": \"1717773616\",\r\n  \"nombres\": \"Iván Mauricio\",\r\n  \"apellidos\": \"Romero Mejía\",\r\n  \"edad\": 37,\r\n  \"cargo\": \"Arquitecto\",\r\n  \"estado\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/api/usuarios/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"1"
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Delete",
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/api/usuarios/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"1"
+							]
+						}
 					},
 					"response": []
 				},
@@ -206,7 +320,19 @@
 					"name": "GetById",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "http://localhost/api/usuarios/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"2"
+							]
+						}
 					},
 					"response": []
 				}

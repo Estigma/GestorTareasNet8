@@ -1,0 +1,10 @@
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: clientservice-config
+#   namespace: gestor-tareas # si usas namespace
+# data:
+#   ASPNETCORE_ENVIRONMENT: "Development"
+#   OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger-service.gestor-tareas.svc.cluster.local:4317" # Usando DNS interno de K8s
+#   SEQ_URL: "http://seq-service.gestor-tareas.svc.cluster.local:5341" # Usando DNS interno de K8s
+#   RabbitMQ__HostName: "rabbitmq-service.gestor-tareas.svc.cluster.local"

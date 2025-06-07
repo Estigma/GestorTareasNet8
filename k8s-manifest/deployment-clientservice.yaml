@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clientservice-deployment
+  namespace: gestor-tareas
+  labels:
+    app: clientservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clientservice
+  template:
+    metadata:
+      labels:
+        app: clientservice
+    spec:
+      containers:
+      - name: clientservice
+        image: estigma/clientservice:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: ConnectionStrings__DefaultConnection
+          value: "Server=db-usuarios-service;Database=ClientDB;User=sa;Password=Salesiana.2025;TrustServerCertificate=True;"
+        - name: RabbitMQ__HostName
+          value: "rabbitmq-service"
+        - name: RabbitMQ__Username
+          value: "admin"
+        - name: RabbitMQ__Password
+          value: "admin123"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://jaeger-service:4317"
+        - name: SEQ_URL
+          value: "http://seq-service:5341"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"

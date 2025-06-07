@@ -30,7 +30,7 @@ builder.Services.AddOcelot()
                 .AddPolly();
 
 var jaegerEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://localhost:4317";
-var serviceName = builder.Environment.ApplicationName; // Por defecto será "ApiGateway"
+var serviceName = builder.Environment.ApplicationName;
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource

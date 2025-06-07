@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: seq-service
+  namespace: gestor-tareas
+spec:
+  selector:
+    app: seq
+  ports:
+  - name: ui
+    protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 30080
+  - name: ingest
+    protocol: TCP
+    port: 5341
+    targetPort: 5341
+  type: NodePort

@@ -97,15 +97,15 @@ namespace TaskService.Test
         public async Task Create_ModeloInvalido_RetornaBadRequest()
         {
             // Arrange
-            var nuevaTarea = new Tarea { Titulo = "Tarea Sin Codigo" }; // CodigoTarea es probablemente requerido
-            _controller.ModelState.AddModelError("CodigoTarea", "El código de la tarea es obligatorio."); // Simula error de validación
+            var nuevaTarea = new Tarea { Titulo = "Tarea Sin Codigo" };
+            _controller.ModelState.AddModelError("CodigoTarea", "El código de la tarea es obligatorio.");
 
             // Act
             var result = await _controller.Create(nuevaTarea);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.True(badRequestResult.Value is SerializableError); // O comprueba el tipo específico de error que devuelve ModelState
+            Assert.True(badRequestResult.Value is SerializableError);
         }
 
         

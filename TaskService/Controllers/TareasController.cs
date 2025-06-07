@@ -17,19 +17,29 @@ namespace TaskService.Controllers
         private readonly IMessageProducer _messageProducer;
         private readonly IFtpService _ftpService;
         private readonly IUsuarioValidator _usuarioValidator;
+        private readonly ILogger<TareasController> _logger;
 
-        public TareasController(ITareaRepository repository, IMessageProducer messageProducer, IFtpService ftpService, IUsuarioValidator usuarioValidator)
+        public TareasController(ITareaRepository repository, 
+            IMessageProducer messageProducer, 
+            IFtpService ftpService, 
+            IUsuarioValidator usuarioValidator,
+            ILogger<TareasController> logger)
         {
             _repository = repository;
             _messageProducer = messageProducer;
             _ftpService = ftpService;
             _usuarioValidator = usuarioValidator;
+            _logger = logger;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var tareas = await _repository.GetAllTareasAsync();
+
+            var podName = Environment.GetEnvironmentVariable("HOSTNAME") ?? "unknown_pod";
+            _logger.LogInformation("Petición GetAll recibida y procesada por el pod: {PodName}", podName);
+
             return Ok(tareas);
         }
 
@@ -122,7 +132,6 @@ namespace TaskService.Controllers
                     });
                 }
 
-                // Establece fecha final si aún no la tiene
                 if (tarea.FechaFinalizacion == null)
                     tarea.FechaFinalizacion = DateTime.UtcNow;
             }
