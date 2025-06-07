@@ -61,20 +61,59 @@ El sistema está diseñado siguiendo una arquitectura de microservicios y desple
 ## Estructura del Proyecto
 
 
-/GestorTareasNet8
-|-- ClientService/                # Microservicio de Usuarios
-|-- TaskService/                  # Microservicio de Tareas
-|-- TaskService.Test/             # Pruebas para TaskService
-|-- DIAGRAMAS/                    # Diagramas de arquitectura
-|-- k8s-manifests/                # Manifiestos YAML para el despliegue en Kubernetes
-|   |-- namespace.yaml
-|   |-- pvc-.yaml
-|   |-- deployment-.yaml
-|   |-- service-.yaml
-|   |-- hpa-.yaml
-|   |-- ingress.yaml
-|-- GestorTareas.sln              # Archivo de solución de Visual Studio
-|-- ...
+* ***/GestorTareasNet8***
+* **|-- ClientService/**                # Microservicio de Usuarios
+* |   |-- Controllers/
+* |   |-- Data/
+* |   |-- DTOs/
+* |   |-- Models/
+* |   |-- Services/                 # Consumidor RabbitMQ para validación
+* |   |-- Dockerfile
+* |   |-- init-db.sh
+* |   |-- init.sql
+* |**-- TaskService/**                  # Microservicio de Tareas
+* |   |-- Controllers/
+* |   |-- Data/
+* |   |-- DTOs/
+* |   |-- Interfaces/
+* |   |-- Models/
+* |   |-- Services/                 # Productor RabbitMQ, Validador de Usuario (RPC), Servicio FTP
+* |   |-- Dockerfile
+* |   |-- init-db.sh
+* |   |-- init.sql
+* **|-- TaskService.Test/**             # Pruebas para TaskService
+* **|-- DIAGRAMAS/**                    # Contiene los diagramas de arquitectura
+* |   |-- 1. Diagrama C4.png
+* |   |-- 2. Diagrama de arquitectura.png
+* |   |-- 3. Diagrama de componentes TaskService.png
+* |   |-- 4. Diagrama de secuencia.png
+* **|-- k8s-manifests/**                # Manifiestos YAML para el despliegue en Kubernetes
+* |   |-- namespace.yaml
+* |   |-- pvc-db-usuarios.yaml        # Persistent Volume Claims para las bases de datos y otros servicios
+* |   |-- pvc-db-tareas.yaml 
+* |   |-- pvc-rabbitmq.yaml
+* |   |-- pvc-ftp.yaml
+* |   |-- pvc-seq.yaml
+* |   |-- deployment-db-usuarios.yaml  # Despliegue de las bases de datos y otros servicios
+* |   |-- deployment-db-tareas.yaml
+* |   |-- deployment-rabbitmq.yaml
+* |   |-- deployment-ftp-server.yaml
+* |   |-- deployment-jaeger.yaml
+* |   |-- deployment-seq.yaml
+* |   |-- deployment-clientservice.yaml
+* |   |-- deployment-taskservice.yaml
+* |   |-- service-db-usuarios.yaml      # Servicios para acceder a las bases de datos y otros servicios
+* |   |-- service-db-tareas.yaml
+* |   |-- service-rabbitmq.yaml
+* |   |-- service-ftp-server.yaml
+* |   |-- service-jaeger.yaml
+* |   |-- service-seq.yaml
+* |   |-- service-clientservice.yaml
+* |   |-- service-taskservice.yaml
+* |   |-- hpa-clientservice.yaml        # Horizontal Pod Autoscaler para ClientService
+* |   |-- hpa-taskservice.yaml
+* |   |-- ingress.yaml                   # Configuración de Ingress para exponer los servicios
+* |**-- GestorTareas.sln**              # Archivo de solución de Visual Studio
 
 
 ## Prerrequisitos

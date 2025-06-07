@@ -87,7 +87,7 @@ Los siguientes diagramas ilustran la arquitectura de la solución:
 * |   |-- init-db.sh
 * |   |-- init.sql
 * **|-- TaskService.Test/**             # Pruebas para TaskService
-* **|-- DIAGRAMAS/**                    # Contiene los diagramas de arquitectura
+* **|-- DIAGRAMAS_ApiGateway_/**                    # Contiene los diagramas de arquitectura
 * |   |-- 1. Diagrama C4.png
 * |   |-- 2. Diagrama de arquitectura.png
 * |   |-- 3. Diagrama de componentes TaskService.png
