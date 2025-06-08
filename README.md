@@ -135,7 +135,7 @@ El sistema está diseñado siguiendo una arquitectura de microservicios y desple
     ```
 
 2.  **Construir y Publicar Imágenes Docker:**
-    Asegúrate de que tus imágenes Docker estén construidas y disponibles para tu clúster de Kubernetes. Puedes subirlas a un registro como Docker Hub o construirlas localmente. Si las construyes localmente, asegúrate que la `imagePullPolicy` en tus Deployments esté como `IfNotPresent` o `Never`.
+    Puedes subirlas a un registro como Docker Hub o construirlas localmente. Si las construyes localmente, asegúrate que la `imagePullPolicy` en tus Deployments esté como `IfNotPresent`.
 
     ```bash
     # Reemplaza 'estigma' con tu Docker ID si vas a subir a Docker Hub
@@ -143,13 +143,12 @@ El sistema está diseñado siguiendo una arquitectura de microservicios y desple
     docker build -t estigma/taskservice:latest -f TaskService/Dockerfile .
     
     # Si usas un registro remoto, no olvides hacer push:
-    # docker push estigma/clientservice:latest
-    # docker push estigma/taskservice:latest
+    docker push estigma/clientservice:latest
+    docker push estigma/taskservice:latest
     ```
-    *Nota: Asegúrate de que los nombres de las imágenes en los archivos `deployment-*.yaml` coincidan con los que has construido.*
-
+    
 3.  **Desplegar los Recursos en Kubernetes:**
-    Navega a la carpeta que contiene los manifiestos YAML (ej. `k8s-manifests/`) y aplica los archivos en el siguiente orden. Se recomienda usar un namespace para mantener los recursos organizados.
+    Navega a la carpeta que contiene los manifiestos YAML (`k8s-manifests/`) y aplica los archivos en el siguiente orden.
 
     ```bash
     # 1. Crear el Namespace
@@ -192,16 +191,67 @@ El sistema está diseñado siguiendo una arquitectura de microservicios y desple
     * Usuarios: `http://localhost/api/usuarios`
     * Tareas: `http://localhost/api/tareas`
 
-* **RabbitMQ Management**: `http://localhost:15672` (Credenciales: `admin` / `admin123`).
+* **RabbitMQ Management**: `http://localhost:30672` (Credenciales: `admin` / `admin123`).
 
-* **Seq (Logging)**: http://localhost:30672`.
+* **Seq (Logging)**: `http://localhost:30080`.
 
 * **Jaeger (Tracing)**: `http://localhost:30686`.
 
-* **Servidor FTP**: `ftp://127.0.0.1:30021/`
-    * **Host:** `localhost`    
-    * **Usuario:** `ftpuser`
-    * **Contraseña:** `ftppass`
+* **Servidor FTP**: `ftp://127.0.0.1:30021/` (Credenciales: `ftpuser` / `ftppass`).
+
+## Pruebas de la Aplicación
+
+### Pruebas con Postman
+
+Para facilitar la prueba manual de los endpoints de la API, se proporciona una colección de Postman en el repositorio.
+
+1.  **Importar la Colección:**
+    * Busca el archivo `GestorTareas.postman_collection.json` en (`Entregables/`)
+    * En tu cliente Postman, ve a `File > Import...` y selecciona este archivo.
+2.  **Uso:**
+    * La colección contiene peticiones pre-configuradas para todos los endpoints de `Usuarios` y `Tareas`.
+    * Las URLs de las peticiones ya apuntan a `http://localhost`, que es la dirección expuesta por el Ingress Controller.
+    * Simplemente selecciona una petición (ej. "Create" en la carpeta "Usuarios"), ajusta el `body` si es necesario y haz clic en "Send".
+
+### Pruebas Unitarias y de Integración
+
+El proyecto incluye un conjunto de pruebas automatizadas para garantizar la calidad y el correcto funcionamiento del `TaskService`.
+
+1.  **Ubicación:** Las pruebas se encuentran en el proyecto `TaskService.Test`.
+2.  **Ejecución:** Para correr todas las pruebas, navega a la raíz del repositorio y ejecuta el siguiente comando:
+    ```bash
+    dotnet test
+    ```
+3.  **Descripción:**
+    * Se utilizan **xUnit** como framework de pruebas, **Moq** para la creación de mocks en las pruebas unitarias y **Testcontainers** para levantar una instancia de RabbitMQ en las pruebas de integración, garantizando un entorno de prueba aislado y consistente.
+
+### Pruebas de Autoescalado (HPA)
+
+El sistema está configurado para escalar horizontalmente los servicios `ClientService` y `TaskService` según la carga de CPU. Para probar esta funcionalidad en un entorno local con recursos limitados, puedes seguir estos pasos:
+
+1.  **Ajustar Manifiestos (Opcional):**
+    Para facilitar la activación del HPA, puedes reducir temporalmente los recursos solicitados y el umbral de escalado.
+    * En `deployment-taskservice.yaml`, reduce `spec.template.spec.containers[0].resources.requests.cpu` a un valor bajo como `"25m"`.
+    * En `hpa-taskservice.yaml`, reduce `spec.metrics[0].resource.target.averageUtilization` a un valor como `30`.
+    * Aplica estos cambios con `kubectl apply -f <archivo> -n gestor-tareas`.
+
+2.  **Observar el Estado:**
+    Abre dos terminales para observar el HPA y los pods en tiempo real:
+    * **Terminal 1 (HPA):** `kubectl get hpa taskservice-hpa -n gestor-tareas -w`
+    * **Terminal 2 (Pods):** `kubectl get pods -n gestor-tareas -w`
+
+3.  **Generar Carga:**
+    Abre una tercera terminal y usa el script de PowerShell  (`Pruebas de carga.ps1`) en (`Entregables/`) para enviar peticiones continuas al `TaskService`:
+    ```powershell
+    & '.\Pruebas de carga.ps1'
+    ```
+
+4.  **Verificar Escalado:**
+    * En la terminal del HPA, verás que el uso de CPU (`TARGETS`) sube. Cuando supere el umbral (ej. `55%/30%`), el número de `REPLICAS` aumentará de 1 a 2.
+    * En la terminal de Pods, verás aparecer un nuevo pod de `taskservice` y pasar al estado `Running`.
+
+5.  **Verificar Distribución de Carga:**
+    Mientras la carga continúa, abre una cuarta terminal y ejecuta `kubectl top pods -n gestor-tareas`. Verás que el consumo de CPU se distribuye entre los dos (o más) pods de `taskservice`, confirmando que el balanceo de carga está funcionando.
 
 ## Para Detener y Limpiar el Entorno
 

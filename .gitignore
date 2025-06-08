@@ -159,7 +159,6 @@ publish/
 # If you have custom scripts or executables that are not part of the source
 *.sh.exe
 *.cmd
-*.ps1
 *.psm1
 
 # Certificate files
