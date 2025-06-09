@@ -27,6 +27,7 @@ namespace TaskService.Test
         private string _messageReceived = null;
 
         private readonly WebApplicationFactory<Program> _factory;
+        private HttpClient _client;
 
         public IntegrationTests()
         {
@@ -107,7 +108,7 @@ namespace TaskService.Test
 
             _channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
 
-            var client = _factory.CreateClient();
+            _client = _factory.CreateClient();
 
             var nuevaTarea = new
             {
@@ -121,7 +122,7 @@ namespace TaskService.Test
                 usuarioId = 1
             };
 
-            await client.PostAsJsonAsync("/api/tareas", nuevaTarea);
+            await _client.PostAsJsonAsync("/api/tareas", nuevaTarea);
 
             nuevaTarea = new
             {
@@ -135,14 +136,12 @@ namespace TaskService.Test
                 usuarioId = 1
             };
 
-            await client.PostAsJsonAsync("/api/tareas", nuevaTarea);
+            await _client.PostAsJsonAsync("/api/tareas", nuevaTarea);
         }
 
         [Fact]
         public async Task CrearYLeerTarea_OK()
         {
-            var client = _factory.CreateClient();
-
             var nuevaTarea = new
             {
                 codigoTarea = "TASK-002",
@@ -155,13 +154,13 @@ namespace TaskService.Test
                 usuarioId = 1
             };
 
-            var postResponse = await client.PostAsJsonAsync("/api/tareas", nuevaTarea);
+            var postResponse = await _client.PostAsJsonAsync("/api/tareas", nuevaTarea);
             postResponse.EnsureSuccessStatusCode();
 
             var tareaCreada = await postResponse.Content.ReadFromJsonAsync<Tarea>();
             tareaCreada.Should().NotBeNull();
 
-            var getResponse = await client.GetAsync($"/api/tareas/{tareaCreada.Id}");
+            var getResponse = await _client.GetAsync($"/api/tareas/{tareaCreada.Id}");
             getResponse.EnsureSuccessStatusCode();
 
             var tareaObtenida = await getResponse.Content.ReadFromJsonAsync<Tarea>();
@@ -171,8 +170,6 @@ namespace TaskService.Test
         [Fact]
         public async Task PostTarea_Error()
         {
-            var client = _factory.CreateClient();
-
             var nuevaTarea = new
             {
                 codigoTarea = "TASK-RMQ",                
@@ -184,7 +181,7 @@ namespace TaskService.Test
                 usuarioId = 1
             };
 
-            var response = await client.PostAsJsonAsync("/api/tareas", nuevaTarea);
+            var response = await _client.PostAsJsonAsync("/api/tareas", nuevaTarea);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
@@ -192,9 +189,7 @@ namespace TaskService.Test
         [Fact]
         public async Task GetAll()
         {
-            var client = _factory.CreateClient();
-
-            var response = await client.GetAsync("/api/tareas");
+            var response = await _client.GetAsync("/api/tareas");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -202,9 +197,7 @@ namespace TaskService.Test
         [Fact]
         public async Task Delete_Error()
         {
-            var client = _factory.CreateClient();
-
-            var response = await client.DeleteAsync("/api/tareas/5");
+            var response = await _client.DeleteAsync("/api/tareas/5");
 
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         }
@@ -212,8 +205,6 @@ namespace TaskService.Test
         [Fact]
         public async Task PutTarea_Error()
         {
-            var client = _factory.CreateClient();
-
             var nuevaTarea = new TareaUpdateDto
             {
                 Id = 3,
@@ -228,7 +219,7 @@ namespace TaskService.Test
 
             var httpContent = JsonContent.Create(nuevaTarea);
 
-            var response = await client.PutAsync($"/api/tareas/{nuevaTarea.Id}", httpContent);
+            var response = await _client.PutAsync($"/api/tareas/{nuevaTarea.Id}", httpContent);
 
             var errorDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
 
@@ -263,7 +254,7 @@ namespace TaskService.Test
 
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-            var getResponse = await client.GetAsync($"/api/tareas/{nuevaTarea.Id}");
+            var getResponse = await _client.GetAsync($"/api/tareas/{nuevaTarea.Id}");
             var tarea = await getResponse.Content.ReadFromJsonAsync<Tarea>();
             tarea.Should().NotBeNull();
             tarea.CodigoTarea.Should().Be(nuevaTarea.CodigoTarea);
@@ -272,6 +263,7 @@ namespace TaskService.Test
         {
             _channel?.Close();
             _connection?.Close();
+            _factory.Dispose();
             await _rabbitContainer.DisposeAsync();
         }
     }

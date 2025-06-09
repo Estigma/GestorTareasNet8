@@ -1,13 +1,14 @@
-﻿using Xunit;
-using Moq;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Moq;
 using TaskService.Controllers;
 using TaskService.Data;
-using TaskService.Models;
-using TaskService.Interfaces;
 using TaskService.DTOs;
-using Microsoft.AspNetCore.Http;
+using TaskService.Interfaces;
+using TaskService.Models;
+using Xunit;
 
 namespace TaskService.Test
 {
@@ -17,6 +18,7 @@ namespace TaskService.Test
         private readonly Mock<IMessageProducer> _mockMessageProducer;
         private readonly Mock<IFtpService> _mockFtpService;
         private readonly Mock<IUsuarioValidator> _mockUsuarioValidator;
+        private readonly Mock<ILogger<TareasController>> _mockLogger;
         private readonly TareasController _controller;
 
         public TareasControllerUnitTests()
@@ -25,12 +27,14 @@ namespace TaskService.Test
             _mockMessageProducer = new Mock<IMessageProducer>();
             _mockFtpService = new Mock<IFtpService>();
             _mockUsuarioValidator = new Mock<IUsuarioValidator>();
+            _mockLogger = new Mock<ILogger<TareasController>>();
 
             _controller = new TareasController(
                 _mockRepo.Object,
                 _mockMessageProducer.Object,
                 _mockFtpService.Object,
-                _mockUsuarioValidator.Object
+                _mockUsuarioValidator.Object,
+                _mockLogger.Object
             )
             {                
                 ControllerContext = new ControllerContext()

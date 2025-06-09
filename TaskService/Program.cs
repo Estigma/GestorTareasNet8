@@ -8,6 +8,8 @@ using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
 using Serilog;
 using Serilog.Exceptions;
+using Polly.Retry;
+using TaskService.Policies;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,97 +29,99 @@ Log.Logger = new LoggerConfiguration()
 
 Log.Information("Serilog configurado para enviar logs a: {SeqUrl}", seqUrl);
 
-try
-{
 
-    builder.Host.UseSerilog();
+builder.Host.UseSerilog();
 
-    if (builder.Configuration["ASPNETCORE_ENVIRONMENT"] != "Test")
-        builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-    builder.Services.AddScoped<ITareaRepository, TareaRepository>();
-    builder.Services.AddSingleton<IMessageProducer, RabbitMQProducer>();
-    builder.Services.AddScoped<IFtpService, FtpService>();
-    builder.Services.AddSingleton<IConnectionFactory>(sp =>
-    {
-        return new ConnectionFactory()
+if (builder.Configuration["ASPNETCORE_ENVIRONMENT"] != "Test")
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
         {
-            HostName = builder.Configuration["RabbitMQ:HostName"],
-            Port = AmqpTcpEndpoint.UseDefaultPort,
-            UserName = builder.Configuration["RabbitMQ:Username"],
-            Password = builder.Configuration["RabbitMQ:Password"],
-            DispatchConsumersAsync = true,
-            AutomaticRecoveryEnabled = true,
-            NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
-        };
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorNumbersToAdd: null);
+        }));
+
+builder.Services.AddScoped<ITareaRepository, TareaRepository>();
+builder.Services.AddSingleton<IMessageProducer, RabbitMQProducer>();
+builder.Services.AddSingleton<AsyncRetryPolicy<string>>(sp =>
+{
+    var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+    var logger = loggerFactory.CreateLogger("PollyPolicies");
+    return PollyPolicies.GetFtpRetryPolicy(logger);
+});
+builder.Services.AddScoped<IFtpService, FtpService>();
+builder.Services.AddSingleton<IConnectionFactory>(sp =>
+{
+    return new ConnectionFactory()
+    {
+        HostName = builder.Configuration["RabbitMQ:HostName"],
+        Port = AmqpTcpEndpoint.UseDefaultPort,
+        UserName = builder.Configuration["RabbitMQ:Username"],
+        Password = builder.Configuration["RabbitMQ:Password"],
+        DispatchConsumersAsync = true,
+        AutomaticRecoveryEnabled = true,
+        NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
+    };
+});
+
+builder.Services.AddScoped<IUsuarioValidator, UsuarioValidatorRabbitMQ>();
+builder.Services.AddControllers()
+    .AddNewtonsoftJson(options =>
+    {
+        options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
     });
 
-    builder.Services.AddScoped<IUsuarioValidator, UsuarioValidatorRabbitMQ>();
-    builder.Services.AddControllers()
-        .AddNewtonsoftJson(options =>
-        {
-            options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
-        });
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+var jaegerEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://localhost:4317";
+var serviceName = builder.Environment.ApplicationName;
 
-    var jaegerEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://localhost:4317";
-    var serviceName = builder.Environment.ApplicationName;
-
-    builder.Services.AddOpenTelemetry()
-        .ConfigureResource(resource => resource
-            .AddService(serviceName: builder.Environment.ApplicationName,
-                        serviceVersion: "1.0.0"))
-        .WithTracing(tracing =>
-        {
-            tracing.AddAspNetCoreInstrumentation()
-                   .AddEntityFrameworkCoreInstrumentation()
-                   .AddHttpClientInstrumentation()
-                   .AddSource("TaskService.RabbitMQProducer")
-                   .AddSource("TaskService.UsuarioValidator")
-                   .AddOtlpExporter();
-        })
-        .WithMetrics(metrics =>
-        {
-            metrics.AddAspNetCoreInstrumentation()
-                   .AddHttpClientInstrumentation()
-                   .AddProcessInstrumentation()
-                   .AddRuntimeInstrumentation()
-                   .AddOtlpExporter(otlpOptions =>
-                   {
-                       otlpOptions.Endpoint = new Uri(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
-                   });
-        });
-
-    var app = builder.Build();
-
-    app.UseSerilogRequestLogging();
-
-    if (app.Environment.IsDevelopment() && !app.Environment.ApplicationName.Contains("Test"))
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource
+        .AddService(serviceName: builder.Environment.ApplicationName,
+                    serviceVersion: "1.0.0"))
+    .WithTracing(tracing =>
     {
-        using var scope = app.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        db.Database.EnsureCreated();
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
+        tracing.AddAspNetCoreInstrumentation()
+                .AddEntityFrameworkCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddSource("TaskService.RabbitMQProducer")
+                .AddSource("TaskService.UsuarioValidator")
+                .AddOtlpExporter();
+    })
+    .WithMetrics(metrics =>
+    {
+        metrics.AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddProcessInstrumentation()
+                .AddRuntimeInstrumentation()
+                .AddOtlpExporter(otlpOptions =>
+                {
+                    otlpOptions.Endpoint = new Uri(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://localhost:4317");
+                });
+    });
 
-    //app.UseHttpsRedirection();
+var app = builder.Build();
 
-    app.UseAuthorization();
+app.UseSerilogRequestLogging();
 
-    app.MapControllers();
-
-    app.Run();
-}
-catch (Exception ex)
+if (app.Environment.IsDevelopment() && !app.Environment.ApplicationName.Contains("Test"))
 {
-    Log.Fatal(ex, "El host de ClientService terminó inesperadamente.");
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
-finally
-{
-    Log.CloseAndFlush();
-}
+
+//app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+
 public partial class Program { }

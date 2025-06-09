@@ -56,41 +56,46 @@ namespace TaskService.Data
         {
             var tareasCreadas = 0;
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            var strategy = _context.Database.CreateExecutionStrategy();
 
-            try
+            await strategy.ExecuteAsync(async () =>
             {
-                foreach (var tareaImportada in tareasImportadas)
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+
+                try
                 {
-                    var existe = await _context.Tareas.AnyAsync(t => t.CodigoTarea == tareaImportada.CodigoTarea);
-
-                    if (!existe)
+                    foreach (var tareaImportada in tareasImportadas)
                     {
-                        var nuevaTarea = new Tarea
+                        var existe = await _context.Tareas.AnyAsync(t => t.CodigoTarea == tareaImportada.CodigoTarea);
+
+                        if (!existe)
                         {
-                            CodigoTarea = tareaImportada.CodigoTarea,
-                            Titulo = tareaImportada.Titulo,
-                            Descripcion = tareaImportada.Descripcion,
-                            CriteriosAceptacion = tareaImportada.CriteriosAceptacion,                                                        
-                            EstadoTarea = EstadoTarea.Backlog,
-                            Estado = true
-                        };
+                            var nuevaTarea = new Tarea
+                            {
+                                CodigoTarea = tareaImportada.CodigoTarea,
+                                Titulo = tareaImportada.Titulo,
+                                Descripcion = tareaImportada.Descripcion,
+                                CriteriosAceptacion = tareaImportada.CriteriosAceptacion,
+                                EstadoTarea = EstadoTarea.Backlog,
+                                Estado = true
+                            };
 
-                        await _context.Tareas.AddAsync(nuevaTarea);
-                        tareasCreadas++;
+                            await _context.Tareas.AddAsync(nuevaTarea);
+                            tareasCreadas++;
+                        }
                     }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
                 }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
 
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return tareasCreadas;
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+            return tareasCreadas;
         }
     }
 }
