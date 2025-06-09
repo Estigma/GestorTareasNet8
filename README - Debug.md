@@ -26,7 +26,7 @@ El sistema está diseñado siguiendo una arquitectura de microservicios, prioriz
 Los siguientes diagramas ilustran la arquitectura de la solución:
 
 1.  **Diagrama C4 (Contexto y Contenedores)**: Muestra el sistema en su contexto general, los actores principales y los contenedores (microservicios, bases de datos, etc.) que lo componen y sus interacciones de alto nivel.
-    ![Diagrama C4](https://raw.githubusercontent.com/Estigma/GestorTareasNet8/refs/heads/main/Diagramas_ApiGateway/4.%20Diagrama%20de%20secuencia.png)
+    ![Diagrama C4](https://raw.githubusercontent.com/Estigma/GestorTareasNet8/refs/heads/main/Diagramas_ApiGateway/1.%20Diagrama%20C4.png)
 
 2.  **Diagrama de Arquitectura General**: Ofrece una vista detallada de los microservicios, el API Gateway, las bases de datos, el broker de mensajes y otras dependencias, así como los flujos de comunicación entre ellos.
     ![Diagrama de Arquitectura](https://raw.githubusercontent.com/Estigma/GestorTareasNet8/refs/heads/main/Diagramas_ApiGateway/2.%20Diagrama%20de%20arquitectura.png)
@@ -35,7 +35,7 @@ Los siguientes diagramas ilustran la arquitectura de la solución:
     ![Diagrama de Componentes TaskService](https://raw.githubusercontent.com/Estigma/GestorTareasNet8/refs/heads/main/Diagramas_ApiGateway/3.%20Diagrama%20de%20componentes%20TaskService.png)
 
 4.  **Diagrama de Secuencia (Asignación de Tarea)**: Ilustra el flujo de interacciones entre los diferentes componentes y servicios cuando se asigna una tarea a un usuario, destacando la comunicación síncrona y asíncrona.
-    ![Diagrama de Secuencia](https://raw.githubusercontent.com/Estigma/GestorTareasNet8/refs/heads/main/Diagramas/4.%20Diagrama_ApiGateway%20de%20secuencia.png)
+    ![Diagrama de Secuencia](https://raw.githubusercontent.com/Estigma/GestorTareasNet8/refs/heads/main/Diagramas_ApiGateway/4.%20Diagrama%20de%20secuencia.png)
 
 ### Componentes Principales
 
@@ -107,7 +107,7 @@ Los siguientes diagramas ilustran la arquitectura de la solución:
 
 1.  **Clonar el repositorio:**
     ```bash
-    git clone [https://github.com/Estigma/GestorTareasNet8.git](https://github.com/Estigma/GestorTareasNet8.git)
+    git clone https://github.com/Estigma/GestorTareasNet8.git
     cd GestorTareasNet8
     ```
 

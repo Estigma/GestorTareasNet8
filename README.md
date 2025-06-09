@@ -130,7 +130,7 @@ El sistema está diseñado siguiendo una arquitectura de microservicios y desple
 
 1.  **Clonar el repositorio:**
     ```bash
-    git clone [https://github.com/Estigma/GestorTareasNet8.git](https://github.com/Estigma/GestorTareasNet8.git)
+    git clone https://github.com/Estigma/GestorTareasNet8.git
     cd GestorTareasNet8
     ```
 
@@ -199,6 +199,30 @@ El sistema está diseñado siguiendo una arquitectura de microservicios y desple
 
 * **Servidor FTP**: `ftp://127.0.0.1:30021/` (Credenciales: `ftpuser` / `ftppass`).
 
+## Endpoints Principales (Vía Ingress Controller - `http://localhost`)
+
+### ClientService (`/api/usuarios`)
+
+* `GET /api/usuarios`: Obtiene todos los usuarios.
+* `GET /api/usuarios/{id}`: Obtiene un usuario por ID.
+* `POST /api/usuarios`: Crea un nuevo usuario.
+* `PUT /api/usuarios/{id}`: Actualiza un usuario existente.
+* `DELETE /api/usuarios/{id}`: Elimina (soft delete) un usuario.
+
+### TaskService (`/api/tareas`)
+
+* `GET /api/tareas`: Obtiene todas las tareas.
+* `GET /api/tareas/{id}`: Obtiene una tarea por ID.
+* `POST /api/tareas`: Crea una nueva tarea.
+* `PUT /api/tareas/{id}`: Actualiza una tarea existente.
+* `PATCH /api/tareas/{id}`: Actualiza parcialmente una tarea (ej. estado, tiempo de desarrollo).
+    * Campos permitidos para PATCH: `estadoTarea`, `tiempoDesarrollo`.
+* `DELETE /api/tareas/{id}`: Elimina (soft delete) una tarea.
+* `POST /api/tareas/{id}/asignar`: Asigna una tarea a un usuario.
+* `GET /api/tareas/usuario/{usuarioId}`: Obtiene todas las tareas asignadas a un usuario específico.
+* `POST /api/tareas/importar`: Importa tareas desde un archivo JSON en el servidor FTP.
+
+
 ## Pruebas de la Aplicación
 
 ### Pruebas con Postman
@@ -253,14 +277,25 @@ El sistema está configurado para escalar horizontalmente los servicios `ClientS
 5.  **Verificar Distribución de Carga:**
     Mientras la carga continúa, abre una cuarta terminal y ejecuta `kubectl top pods -n gestor-tareas`. Verás que el consumo de CPU se distribuye entre los dos (o más) pods de `taskservice`, confirmando que el balanceo de carga está funcionando.
 
+### Verificar Mensajes en RabbitMQ
+
+Para verificar los mensajes de notificación que se envían cuando se asigna una tarea (al exchange `asignaciones_exchange`), puedes usar la interfaz de gestión de RabbitMQ.
+
+1.  **Accede a la UI de RabbitMQ**.
+    *Ve a `http://localhost:30672` y accede con las credenciales `admin` / `admin123`.
+2.  **Crea una Cola de Prueba:** El exchange `asignaciones_exchange` es de tipo `fanout`, lo que significa que no almacena mensajes; los envía a todas las colas enlazadas. Para ver los mensajes, necesitas crear una cola que los reciba.
+    * Ve a la pestaña **Queues**.
+    * En "Add a new queue", dale un nombre (ej. `cola_debug_asignaciones`) y haz clic en "Add queue".
+3.  **Enlaza (Bind) la Cola al Exchange:**
+    * Ve a la pestaña **Exchanges**.
+    * Haz clic en `asignaciones_exchange`.
+    * En la sección "Bindings", en "Add binding from this exchange", selecciona tu nueva cola (`cola_debug_asignaciones`) y haz clic en "Bind".
+4.  **Genera un Mensaje:** Asigna una tarea a un usuario usando el endpoint `POST /api/tareas/{id}/asignar`.
+5.  **Revisa la Cola:** Vuelve a la pestaña "Queues" y haz clic en tu `cola_debug_asignaciones`. En la sección "Get messages", puedes "espiar" los mensajes para ver su contenido sin consumirlos.
+
 ## Para Detener y Limpiar el Entorno
 
 Para eliminar todos los recursos creados para este proyecto, la forma más sencilla es borrar el namespace:
 ```bash
 kubectl delete namespace gestor-tareas
 
-¡Advertencia! Esto eliminará todos los Deployments, Services, Pods, PVCs e Ingresses dentro de ese namespace. Para eliminar también los datos persistentes, es posible que necesites borrar los PersistentVolumes (PVs) manualmente.
-
-# Opcional: listar y borrar PVs si quedaron en estado 'Released'
-kubectl get pv
-kubectl delete pv <nombre-del-pv>
