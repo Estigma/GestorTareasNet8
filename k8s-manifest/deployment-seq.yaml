@@ -26,6 +26,8 @@ spec:
           value: "Y"
         - name: SEQ_LISTENURIS
           value: "http://0.0.0.0:80;http://0.0.0.0:5341"
+        - name: SEQ_FIRSTRUN_NOAUTHENTICATION
+          value: "true"
         volumeMounts:
         - name: seq-storage
           mountPath: /data
